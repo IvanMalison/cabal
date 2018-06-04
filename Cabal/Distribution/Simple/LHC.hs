@@ -43,29 +43,30 @@ module Distribution.Simple.LHC (
         ghcVerbosityOptions
  ) where
 
-import Prelude ()
-import Distribution.Compat.Prelude
+import           Prelude ()
+import           Distribution.Compat.Prelude
 
-import Distribution.Types.UnqualComponentName
-import Distribution.PackageDescription as PD hiding (Flag)
-import Distribution.InstalledPackageInfo
+import           Distribution.Compat.Exception
+import           Distribution.InstalledPackageInfo
 import qualified Distribution.InstalledPackageInfo as InstalledPackageInfo
-import Distribution.Simple.PackageIndex
-import qualified Distribution.Simple.PackageIndex as PackageIndex
-import Distribution.Simple.LocalBuildInfo
-import Distribution.Simple.BuildPaths
-import Distribution.Simple.Utils
-import Distribution.Package
 import qualified Distribution.ModuleName as ModuleName
-import Distribution.Simple.Program
+import           Distribution.Package
+import           Distribution.PackageDescription as PD hiding (Flag)
+import           Distribution.Simple.BuildPaths
+import           Distribution.Simple.Compiler
+import           Distribution.Simple.LocalBuildInfo
+import           Distribution.Simple.PackageIndex
+import qualified Distribution.Simple.PackageIndex as PackageIndex
+import           Distribution.Simple.Program
 import qualified Distribution.Simple.Program.HcPkg as HcPkg
-import Distribution.Simple.Compiler
-import Distribution.Version
-import Distribution.Verbosity
-import Distribution.Text
-import Distribution.Compat.Exception
-import Distribution.System
-import Language.Haskell.Extension
+import           Distribution.Simple.Utils
+import           Distribution.System
+import           Distribution.Text
+import           Distribution.Types.UnqualComponentName
+import           Distribution.Utils.Generic
+import           Distribution.Verbosity
+import           Distribution.Version
+import           Language.Haskell.Extension
 
 import qualified Data.Map as Map ( empty )
 import System.Directory         ( removeFile, renameFile,
@@ -73,7 +74,7 @@ import System.Directory         ( removeFile, renameFile,
                                   getTemporaryDirectory )
 import System.FilePath          ( (</>), (<.>), takeExtension,
                                   takeDirectory, replaceExtension )
-import System.IO (hClose, hPutStrLn)
+import           System.IO (hClose, hPutStrLn)
 
 -- -----------------------------------------------------------------------------
 -- Configuring
@@ -588,7 +589,7 @@ ghcOptions lbi bi clbi odir
      ++ ["-I" ++ autogenComponentModulesDir lbi clbi]
      ++ ["-I" ++ autogenPackageModulesDir lbi]
      ++ ["-I" ++ odir]
-     ++ ["-I" ++ dir | dir <- PD.includeDirs bi]
+     ++ ["-I" ++ dir | dir <- ordNub $ PD.includeDirs bi]
      ++ ["-optP" ++ opt | opt <- cppOptions bi]
      ++ [ "-optP-include", "-optP"++ (autogenComponentModulesDir lbi clbi </> cppHeaderName) ]
      ++ [ "-#include \"" ++ inc ++ "\"" | inc <- PD.includes bi ]
@@ -651,7 +652,7 @@ constructCcCmdLine lbi bi clbi pref filename verbosity
 ghcCcOptions :: LocalBuildInfo -> BuildInfo -> ComponentLocalBuildInfo
              -> FilePath -> [String]
 ghcCcOptions lbi bi clbi odir
-     =  ["-I" ++ dir | dir <- PD.includeDirs bi]
+     =  ["-I" ++ dir | dir <- ordNub $ PD.includeDirs bi]
      ++ ghcPackageDbOptions lbi
      ++ ghcPackageFlags lbi clbi
      ++ ["-optc" ++ opt | opt <- PD.ccOptions bi]
