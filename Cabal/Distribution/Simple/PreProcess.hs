@@ -420,8 +420,8 @@ ppHsc2hs bi lbi clbi =
        ++ [ "--cflag="   ++ opt | opt <- platformDefines lbi ]
 
           -- Options from the current package:
-       ++ [ "--cflag=-I" ++ dir | dir <- PD.includeDirs  bi ]
-       ++ [ "--cflag=-I" ++ buildDir lbi </> dir | dir <- PD.includeDirs bi ]
+       ++ [ "--cflag=-I" ++ dir | dir <- ordNub $ PD.includeDirs  bi ]
+       ++ [ "--cflag=-I" ++ buildDir lbi </> dir | dir <- ordNub $ PD.includeDirs bi ]
        ++ [ "--cflag="   ++ opt | opt <- PD.ccOptions    bi
                                       ++ PD.cppOptions   bi ]
        ++ [ "--cflag="   ++ opt | opt <-
@@ -435,10 +435,11 @@ ppHsc2hs bi lbi clbi =
        ++ [ "--lflag="   ++ opt | opt <- PD.ldOptions    bi ]
 
           -- Options from dependent packages
-       ++ [ "--cflag=" ++ opt
-          | pkg <- pkgs
-          , opt <- [ "-I" ++ opt | opt <- Installed.includeDirs pkg ]
-                ++ [         opt | opt <- Installed.ccOptions   pkg ] ]
+       ++ (ordNub $
+           [ "--cflag=" ++ opt
+           | pkg <- pkgs
+           , opt <- [ "-I" ++ opt | opt <- Installed.includeDirs pkg ]
+                    ++ [         opt | opt <- Installed.ccOptions   pkg ] ])
        ++ [ "--lflag=" ++ opt
           | pkg <- pkgs
           , opt <- [ "-L" ++ opt | opt <- Installed.libraryDirs    pkg ]
